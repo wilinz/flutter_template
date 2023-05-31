@@ -50,7 +50,7 @@ class AppNetwork {
           status != null && status >= 200 && status < 400,
     );
     dio.interceptors.add(CookieManager(cookieJar));
-    proxy(dio);
+    // proxy(dio);
     if (kDebugMode) {
       dio.interceptors.add(PrettyDioLogger(
           requestHeader: true,
