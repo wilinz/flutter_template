@@ -54,12 +54,12 @@ class AppNetwork {
     if (kDebugMode) {
       dio.interceptors.add(PrettyDioLogger(
           requestHeader: true,
-          requestBody: false,
+          requestBody: true,
           responseBody: true,
-          responseHeader: false,
+          responseHeader: true,
           error: true,
           compact: true,
-          maxWidth: 90));
+          maxWidth: 200));
     }
     dio.interceptors.add(JsonpInterceptor());
     return dio;
@@ -72,7 +72,7 @@ class AppNetwork {
           (client) {
         client.findProxy = (uri) {
           // 这里设置代理地址和端口号
-          return "PROXY 192.168.1.209:18888";
+          return "PROXY 192.168.1.5:18888";
         };
         client.badCertificateCallback =
             (X509Certificate cert, String host, int port) => true;
@@ -174,14 +174,13 @@ class RedirectInterceptor extends Interceptor {
   Future<void> onResponse(
       Response response, ResponseInterceptorHandler handler) async {
     if (_isRedirect(response.statusCode ?? 0)) {
-      final location = response.headers.value('location');
-      if (location == null) throw Exception("Redirect location is null");
-      final requestOptions = response.requestOptions;
-      final rawUri = requestOptions.uri.toString();
+      try {
+        final location = response.headers.value('location');
+        if (location == null) throw Exception("Redirect location is null");
+        final requestOptions = response.requestOptions;
+        final rawUri = requestOptions.uri.toString();
 
-      final redirectResponse = await dio.get(
-        _parseHttpLocation(rawUri, location),
-        options: Options(
+        final option = Options(
           sendTimeout: requestOptions.sendTimeout,
           receiveTimeout: requestOptions.receiveTimeout,
           extra: requestOptions.extra,
@@ -196,9 +195,15 @@ class RedirectInterceptor extends Interceptor {
           requestEncoder: requestOptions.requestEncoder,
           responseDecoder: requestOptions.responseDecoder,
           listFormat: requestOptions.listFormat,
-        ),
-      );
-      return handler.next(redirectResponse);
+        );
+        final redirectResponse = await dio.get(
+          _parseHttpLocation(rawUri, location),
+          options: option,
+        );
+        return handler.next(redirectResponse);
+      } on DioException catch (e) {
+        return handler.reject(e);
+      }
     }
     return handler.next(response);
   }
