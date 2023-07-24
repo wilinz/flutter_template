@@ -10,47 +10,71 @@ import 'package:kt_dart/kt.dart';
 import 'package:provider/provider.dart';
 
 import '../../route.dart';
-import 'login_viewmodel.dart';
+import 'register_viewmodel.dart';
 
-class LoginPage extends StatelessWidget {
+class RegisterPage extends StatelessWidget {
   final bool popUpAfterSuccess;
+  final String username;
+  final String password;
 
-  const LoginPage({Key? key, required this.popUpAfterSuccess})
+  const RegisterPage(
+      {Key? key,
+      required this.popUpAfterSuccess,
+      required this.username,
+      required this.password})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider<LoginViewModel>(
         create: (context) => LoginViewModel(),
-        child: _LoginPage(
-          popUpAfterSuccess: popUpAfterSuccess,
-        ));
+        child: _RegisterPage(
+            popUpAfterSuccess: popUpAfterSuccess,
+            username: username,
+            password: password));
   }
 }
 
-class _LoginPage extends StatefulWidget {
-  const _LoginPage({Key? key, required this.popUpAfterSuccess})
+class _RegisterPage extends StatefulWidget {
+  const _RegisterPage(
+      {Key? key,
+      required this.popUpAfterSuccess,
+      required this.username,
+      required this.password})
       : super(key: key);
   final bool popUpAfterSuccess;
+  final String username;
+  final String password;
 
   @override
-  State<_LoginPage> createState() => _LoginPageState();
+  State<_RegisterPage> createState() => _RegisterPageState();
 }
 
-class _LoginPageState extends State<_LoginPage> {
-  final TextEditingController _usernameController =
-      TextEditingController(text: "");
-  final TextEditingController _passwordController =
-      TextEditingController(text: "");
+class _RegisterPageState extends State<_RegisterPage> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _captchaController = TextEditingController();
+
+  Timer? _countdownTimer;
   GlobalKey _formKey = GlobalKey<FormState>();
   bool _passwordVisible = false;
+
+  bool _isGettingVerificationCode = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _usernameController.text = widget.username;
+    _passwordController.text = widget.password;
+    initAsync();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<LoginViewModel>(builder: (context, vm, child) {
       return Scaffold(
         appBar: AppBar(
-          title: const Text("登录"),
+          title: const Text("注册"),
         ),
         body: SingleChildScrollView(
           child: Center(
@@ -67,15 +91,15 @@ class _LoginPageState extends State<_LoginPage> {
                       child: Column(
                         children: [
                           SizedBox(height: 50),
-                          Text('登录',
+                          Text('注册',
                               style: Theme.of(context).textTheme.titleLarge),
                           SizedBox(height: 50),
                           TextFormField(
                             controller: _usernameController,
                             autofocus: true,
                             decoration: InputDecoration(
-                              labelText: "用户名",
-                              hintText: "您的用户名",
+                              labelText: "邮箱",
+                              hintText: "您的邮箱",
                               prefixIcon: Icon(Icons.person),
                               // helperText: '用户名',
                               border: const OutlineInputBorder(
@@ -119,7 +143,38 @@ class _LoginPageState extends State<_LoginPage> {
                               return v!.trim().length > 0 ? null : "密码不能为空";
                             },
                           ),
-                          Container(
+                          SizedBox(
+                            height: 16,
+                          ),
+                          TextFormField(
+                            controller: _captchaController,
+                            autofocus: true,
+                            decoration: InputDecoration(
+                              labelText: "验证码",
+                              hintText: "验证码",
+                              prefixIcon: Icon(Icons.domain_verification),
+                              suffixIcon: IconButton(
+                                onPressed: _isGettingVerificationCode ||
+                                        _countdownTimer != null
+                                    ? null
+                                    : () => _sendCode(_usernameController.text),
+                                icon: _countdownTimer == null
+                                    ? Icon(Icons.send)
+                                    : Text("${60 - _countdownTimer!.tick}",
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge),
+                              ),
+                              // helperText: '用户名',
+                              border: const OutlineInputBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(16))),
+                            ),
+                            validator: (v) {
+                              return v!.trim().length > 0 ? null : "验证码不能为空";
+                            },
+                          ),
+                          SizedBox(
                             height: 32,
                           ),
                           Consumer<LoginViewModel>(
@@ -127,32 +182,17 @@ class _LoginPageState extends State<_LoginPage> {
                               return ElevatedButton(
                                 onPressed: loginViewModel.isLoading
                                     ? null
-                                    : () => _login(loginViewModel, context,
+                                    : () => _register(loginViewModel, context,
                                         _formKey.currentState as FormState),
                                 style: ElevatedButton.styleFrom(
                                     minimumSize:
                                         const Size(double.infinity, 50)),
                                 child: loginViewModel.isLoading
-                                    ? Text("正在登录...")
-                                    : Text("登录"),
+                                    ? Text("正在注册...")
+                                    : Text("注册"),
                               );
                             },
                           ),
-                          SizedBox(height: 12),
-                          Row(children: [
-                            TextButton(
-                                onPressed: () {
-                                  Navigator.pushNamed(
-                                      context, AppRoute.registerPage,
-                                      arguments: {
-                                        "username": _usernameController.text,
-                                        "password": _passwordController.text
-                                      });
-                                },
-                                child: Text("注册")),
-                            Expanded(child: SizedBox()),
-                            TextButton(onPressed: () {}, child: Text("忘记密码"))
-                          ])
                         ],
                       ),
                     )),
@@ -162,12 +202,6 @@ class _LoginPageState extends State<_LoginPage> {
         ),
       );
     });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    initAsync();
   }
 
   @override
@@ -184,7 +218,7 @@ class _LoginPageState extends State<_LoginPage> {
     });
   }
 
-  Future<void> _login(LoginViewModel loginViewModel, BuildContext context,
+  Future<void> _register(LoginViewModel loginViewModel, BuildContext context,
       FormState currentState) async {
     if (!currentState.validate()) {
       showSnackBar(context, "请检查输入");
@@ -193,26 +227,65 @@ class _LoginPageState extends State<_LoginPage> {
     final dio = await AppNetwork.getDio();
 
     try {
-      final resp = await dio.post("/account/login",
+      final resp = await dio.post("/account/register",
           options: Options(responseType: ResponseType.json),
           data: {
+            "code": _captchaController.text,
+            "password": _passwordController.text,
             "username": _usernameController.text,
-            "password": sha256Text(_passwordController.text)
           });
-      final loginResult = LoginResponse.fromJson(resp.data);
-      if (loginResult.code == 200) {
-        showSnackBar(context, "登录成功");
-        if (widget.popUpAfterSuccess) {
-          Navigator.pop(context);
-        } else {
-          Navigator.pushNamed(context, AppRoute.mainPage);
-        }
+      final result = resp.data;
+      if (result['code'] == 200) {
+        showSnackBar(context, "注册成功");
+        Navigator.pop(context);
       } else {
-        showSnackBar(context, "登录失败: ${loginResult.msg}");
+        showSnackBar(context, "注册失败: ${result['msg']}");
       }
     } catch (e) {
-      showSnackBar(context, "登录失败: ${e}");
+      showSnackBar(context, "注册失败: ${e}");
       print(e);
     }
+  }
+
+  _sendCode(String email) async {
+    if (_usernameController.text.trim().isEmpty) {
+      showSnackBar(context, "请先输入邮箱");
+      return;
+    }
+
+    setState(() {
+      _isGettingVerificationCode = true;
+    });
+
+    final dio = await AppNetwork.getDio();
+    final resp = await dio.post("/account/verify",
+        data: {"codeType": "1001", "graphicCode": "忽略", "phoneOrEmail": email});
+    final respBody = resp.data;
+    if (respBody['code'] == 200) {
+      showSnackBar(context, "验证码发送成功");
+
+      // 启动倒计时
+      const countdownDuration = Duration(seconds: 60); // 倒计时时长
+      var remaining = countdownDuration;
+      setState(() {
+        _countdownTimer = Timer.periodic(Duration(seconds: 1), (timer) {
+          setState(() {
+            remaining = remaining - Duration(seconds: 1);
+          });
+          if (remaining.inSeconds == 0) {
+            timer.cancel();
+            setState(() {
+              _countdownTimer = null;
+            });
+          }
+        });
+      });
+    } else {
+      showSnackBar(context, "验证码发送失败：${respBody['msg']}");
+    }
+
+    setState(() {
+      _isGettingVerificationCode = false;
+    });
   }
 }

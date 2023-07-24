@@ -5,6 +5,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_template/ui/color_schemes.g.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart';
 
@@ -19,10 +20,12 @@ Future<void> main() async {
     final screen = await getCurrentScreen();
     print(screen?.visibleFrame.width);
     print(screen?.visibleFrame.height);
-    final height = (screen?.visibleFrame.height ?? 450 + padding * 2) - padding * 2;
+    final height =
+        (screen?.visibleFrame.height ?? 450 + padding * 2) - padding * 2;
     // 必须加上这一行。
     await windowManager.ensureInitialized();
-    WindowOptions windowOptions = WindowOptions(size: Size(height*(0.48), height));
+    WindowOptions windowOptions =
+        WindowOptions(size: Size(height * (0.48), height));
 
     windowManager.waitUntilReadyToShow(windowOptions, () async {
       await windowManager.setMinimizable(true);
@@ -30,7 +33,8 @@ Future<void> main() async {
       await windowManager.setMaximizable(false);
       await windowManager.setResizable(false);
       final position = await windowManager.getPosition();
-      await windowManager.setPosition(Offset(position.dx - padding, position.dy));
+      await windowManager
+          .setPosition(Offset(position.dx - padding, position.dy));
       // await windowManager.setTitleBarStyle(TitleBarStyle.normal,windowButtonVisibility: true);
       await windowManager.show();
       await windowManager.focus();
@@ -40,7 +44,7 @@ Future<void> main() async {
   runApp(const MyApp());
 }
 
-showSnackBar(BuildContext context, String msg, int milliseconds) {
+showSnackBar(BuildContext context, String msg, {int milliseconds = 2000}) {
   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
       content: Text(msg),
       // action: SnackBarAction(label: '撤销', onPressed: Null),
@@ -66,20 +70,8 @@ class _MyAppState extends State<MyApp> with WindowListener {
     }
     return MaterialApp(
         title: 'Flutter Template',
-        theme: ThemeData(
-          // This is the theme of your application.
-          //
-          // Try running your application with "flutter run". You'll see the
-          // application has a blue toolbar. Then, without quitting the app, try
-          // changing the primarySwatch below to Colors.green and then invoke
-          // "hot reload" (press "r" in the console where you ran "flutter run",
-          // or simply save your changes to "hot reload" in a Flutter IDE).
-          // Notice that the counter didn't reset back to zero; the application
-          // is not restarted.
-          primarySwatch: Colors.blue,
-          useMaterial3: true,
-        ),
-        darkTheme: ThemeData.dark(useMaterial3: true),
+        theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
+        darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
         routes: AppRoute.routes,
         debugShowCheckedModeBanner: false,
         navigatorKey: AppRoute.navigatorKey,
@@ -107,8 +99,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
     super.initState();
     subscription = Connectivity()
         .onConnectivityChanged
-        .listen((ConnectivityResult result) {
-    });
+        .listen((ConnectivityResult result) {});
   }
 
   @override
