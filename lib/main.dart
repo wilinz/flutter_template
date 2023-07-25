@@ -32,7 +32,8 @@ Future<void> main() async {
       await windowManager.setAlignment(Alignment.centerRight);
       await windowManager.setMaximizable(true);
       await windowManager.setResizable(true);
-      await windowManager.setTitleBarStyle(TitleBarStyle.hidden,windowButtonVisibility:false);
+      await windowManager.setTitleBarStyle(TitleBarStyle.hidden,
+          windowButtonVisibility: true);
       final position = await windowManager.getPosition();
       await windowManager
           .setPosition(Offset(position.dx - padding, position.dy));
@@ -80,19 +81,38 @@ class _MyAppState extends State<MyApp> with WindowListener {
           return MaterialPageRoute(builder: (context) {
             var routeName = settings.name!;
             AppRoute.currentPage = routeName;
-            return Scaffold(
-              appBar: PreferredSize(
-                child: WindowCaption(
-                  brightness: Theme.of(context).brightness,
-                  title: Text('flutter_template'),
-                ),
-                preferredSize: const Size.fromHeight(kWindowCaptionHeight),
-              ),
-              body:
-                  AppRoute.routes[routeName]!.call(context, settings.arguments),
-            );
+            if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+              return Scaffold(
+                appBar: buildWindowTopBar(context,'flutter_template'),
+                body: AppRoute.routes[routeName]!
+                    .call(context, settings.arguments),
+              );
+            } else {
+              return AppRoute.routes[routeName]!
+                  .call(context, settings.arguments);
+            }
           });
         });
+  }
+
+  PreferredSizeWidget buildWindowTopBar(BuildContext context, String title) {
+    if (Platform.isMacOS) {
+      return PreferredSize(
+        child: SizedBox(
+          height: kWindowCaptionHeight,
+          child: Center(child: Text(title)),
+        ),
+        preferredSize: const Size.fromHeight(kWindowCaptionHeight),
+      );
+    } else {
+      return PreferredSize(
+        child: WindowCaption(
+          brightness: Theme.of(context).brightness,
+          title: Text(title),
+        ),
+        preferredSize: const Size.fromHeight(kWindowCaptionHeight),
+      );
+    }
   }
 
   @override
