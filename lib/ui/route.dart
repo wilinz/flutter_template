@@ -5,7 +5,6 @@ import 'page/login/login.dart';
 import 'page/main/main.dart';
 import 'page/splash/splash.dart';
 
-
 class AppRoute {
   static String currentPage = splashPage;
 
@@ -21,16 +20,17 @@ class AppRoute {
   static const String registerPage = "registerPage";
 
   ///路由表配置
-  static Map<String, WidgetBuilder> routes = {
-    loginPage: (context) {
-      final args = ModalRoute.of(context)!.settings.arguments!;
+  static Map<String, Widget Function(BuildContext context, dynamic arguments)>
+      routes = {
+    loginPage: (context, arguments) {
+      final args = arguments;
       final popUpAfterSuccess = args as bool;
       return LoginPage(popUpAfterSuccess: popUpAfterSuccess);
     },
-    splashPage: (context) => const SplashPage(),
-    mainPage: (context) => const MainPage(),
-    registerPage: (context) {
-      dynamic args = ModalRoute.of(context)!.settings.arguments!;
+    splashPage: (context, arguments) => const SplashPage(),
+    mainPage: (context, arguments) => const MainPage(),
+    registerPage: (context, arguments) {
+      dynamic args = arguments;
       return RegisterPage(
           popUpAfterSuccess: true,
           username: args['username'] ?? '',

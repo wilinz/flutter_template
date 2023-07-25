@@ -32,6 +32,7 @@ Future<void> main() async {
       await windowManager.setAlignment(Alignment.centerRight);
       await windowManager.setMaximizable(false);
       await windowManager.setResizable(false);
+      await windowManager.setTitleBarStyle(TitleBarStyle.hidden);
       final position = await windowManager.getPosition();
       await windowManager
           .setPosition(Offset(position.dx - padding, position.dy));
@@ -72,14 +73,24 @@ class _MyAppState extends State<MyApp> with WindowListener {
         title: 'Flutter Template',
         theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
         darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
-        routes: AppRoute.routes,
+        // routes: AppRoute.routes,
         debugShowCheckedModeBanner: false,
         navigatorKey: AppRoute.navigatorKey,
         onGenerateRoute: (RouteSettings settings) {
           return MaterialPageRoute(builder: (context) {
             var routeName = settings.name!;
             AppRoute.currentPage = routeName;
-            return AppRoute.routes[routeName]!.call(context);
+            return Scaffold(
+              appBar: PreferredSize(
+                child: WindowCaption(
+                  brightness: Theme.of(context).brightness,
+                  title: Text('flutter_template'),
+                ),
+                preferredSize: const Size.fromHeight(kWindowCaptionHeight),
+              ),
+              body:
+                  AppRoute.routes[routeName]!.call(context, settings.arguments),
+            );
           });
         });
   }
