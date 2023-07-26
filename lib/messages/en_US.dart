@@ -1,4 +1,5 @@
 final en_US = {
+  'app_name':'Flutter Template',
   'hello': 'Hello',
   'login': 'Login',
   'username': 'Username',

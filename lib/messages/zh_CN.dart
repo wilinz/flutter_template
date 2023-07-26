@@ -1,4 +1,5 @@
 final zh_CN = {
+  'app_name':'Flutter 模板',
   'hello': '你好',
   'login': '登录',
   'username': '用户名',

@@ -76,7 +76,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
     return GetMaterialApp(
-        title: 'Flutter Template',
+        title: 'app_name'.tr,
         translations: Messages(),
         // locale: Locale('en', 'US'),
         locale: Get.deviceLocale,
@@ -92,7 +92,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
             AppRoute.currentPage = routeName;
             if (GetPlatform.isDesktop) {
               return Scaffold(
-                appBar: buildWindowTopBar(context,'flutter_template'),
+                appBar: buildWindowTopBar(context,'app_name'.tr),
                 body: AppRoute.routes[routeName]!
                     .call(context, settings.arguments),
               );
