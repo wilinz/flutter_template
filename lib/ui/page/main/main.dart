@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import 'home/home.dart';
 import 'profile/profile.dart';
@@ -38,15 +39,15 @@ class _MainPageState extends State<_MainPage> {
         bottomNavigationBar: NavigationBar(
             destinations: [
               NavigationDestination(
-                tooltip: '主页',
+                tooltip: 'home_page'.tr,
                 icon: Icon(Icons.home_outlined),
-                label: '主页',
+                label: 'home_page'.tr,
                 selectedIcon: Icon(Icons.home),
               ),
               NavigationDestination(
-                tooltip: '我的',
+                tooltip: 'my'.tr,
                 icon: Icon(Icons.person_outlined),
-                label: '我的',
+                label: 'my'.tr,
                 selectedIcon: Icon(Icons.person),
               )
             ],

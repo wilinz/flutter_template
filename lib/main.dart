@@ -6,6 +6,11 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_template/ui/color_schemes.g.dart';
+import 'package:flutter_template/messages/messages.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
+import 'package:get/get_navigation/src/root/get_material_app.dart';
+import 'package:get/get_utils/src/platform/platform.dart';
 import 'package:window_manager/window_manager.dart';
 import 'package:window_size/window_size.dart';
 
@@ -70,8 +75,12 @@ class _MyAppState extends State<MyApp> with WindowListener {
       SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
-    return MaterialApp(
+    return GetMaterialApp(
         title: 'Flutter Template',
+        translations: Messages(),
+        // locale: Locale('en', 'US'),
+        locale: Get.deviceLocale,
+        fallbackLocale:  Locale('zh', 'CN'),
         theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
         darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
         // routes: AppRoute.routes,
@@ -81,7 +90,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
           return MaterialPageRoute(builder: (context) {
             var routeName = settings.name!;
             AppRoute.currentPage = routeName;
-            if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+            if (GetPlatform.isDesktop) {
               return Scaffold(
                 appBar: buildWindowTopBar(context,'flutter_template'),
                 body: AppRoute.routes[routeName]!

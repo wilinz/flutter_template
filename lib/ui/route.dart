@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_template/ui/page/regiester/register.dart';
+import 'package:flutter_template/ui/page/settings/settings_page.dart';
 
 import 'page/login/login.dart';
 import 'page/main/main.dart';
@@ -11,13 +12,15 @@ class AppRoute {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
-  static const String loginPage = "loginPage";
+  static const String loginPage = "/loginPage";
 
   static const String splashPage = "/";
 
-  static const String mainPage = "mainPage";
+  static const String mainPage = "/mainPage";
 
-  static const String registerPage = "registerPage";
+  static const String registerPage = "/registerPage";
+
+  static const String settingsPage = "/SettingsPage";
 
   ///路由表配置
   static Map<String, Widget Function(BuildContext context, dynamic arguments)>
@@ -25,14 +28,14 @@ class AppRoute {
     loginPage: (context, arguments) {
       final args = arguments;
       final popUpAfterSuccess = args as bool;
-      return LoginPage(popUpAfterSuccess: popUpAfterSuccess);
+      return LoginPage();
     },
     splashPage: (context, arguments) => const SplashPage(),
     mainPage: (context, arguments) => const MainPage(),
+    settingsPage: (context, arguments) => SettingsPage(),
     registerPage: (context, arguments) {
       dynamic args = arguments;
       return RegisterPage(
-          popUpAfterSuccess: true,
           username: args['username'] ?? '',
           password: args['password'] ?? '');
     },
