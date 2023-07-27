@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_template/ui/page/regiester/register.dart';
+import 'package:flutter_template/ui/page/reset_password/reset_password.dart';
 import 'package:flutter_template/ui/page/settings/settings_page.dart';
 
 import 'page/login/login.dart';
@@ -22,6 +23,8 @@ class AppRoute {
 
   static const String settingsPage = "/SettingsPage";
 
+  static const String resetPasswordPage = "/ResetPasswordPage";
+
   ///路由表配置
   static Map<String, Widget Function(BuildContext context, dynamic arguments)>
       routes = {
@@ -36,8 +39,9 @@ class AppRoute {
     registerPage: (context, arguments) {
       dynamic args = arguments;
       return RegisterPage(
-          username: args['username'] ?? '',
-          password: args['password'] ?? '');
+          username: args['username'] ?? '', password: args['password'] ?? '');
     },
+    resetPasswordPage: (context, arguments) =>
+        ResetPasswordPage(username: arguments['username'] ?? ""),
   };
 }

@@ -1,20 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_template/ui/page/regiester/register_viewmodel.dart';
+import 'package:flutter_template/ui/page/reset_password/reset_password_controller.dart';
 import 'package:get/get.dart';
 
-class RegisterPage extends StatelessWidget {
+class ResetPasswordPage extends StatelessWidget {
   final String username;
-  final String password;
 
-  const RegisterPage({Key? key, required this.username, required this.password})
-      : super(key: key);
+  const ResetPasswordPage({Key? key, required this.username}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final c = Get.put(RegisterController(username, password));
+    final c = Get.put(ResetPasswordController(username));
     return Scaffold(
       appBar: AppBar(
-        title: Text("register".tr),
+        title: Text("reset_password".tr),
       ),
       body: SingleChildScrollView(
         child: Center(
@@ -31,7 +30,7 @@ class RegisterPage extends StatelessWidget {
                     child: Column(
                       children: [
                         SizedBox(height: 50),
-                        Text('register'.tr,
+                        Text('reset_password'.tr,
                             style: Theme.of(context).textTheme.titleLarge),
                         SizedBox(height: 50),
                         TextFormField(
@@ -124,13 +123,14 @@ class RegisterPage extends StatelessWidget {
                           height: 32,
                         ),
                         Obx(() => ElevatedButton(
-                              onPressed:
-                                  c.isLoading.value ? null : () => c.register(),
+                              onPressed: c.isLoading.value
+                                  ? null
+                                  : () => c.resetPassword(),
                               style: ElevatedButton.styleFrom(
                                   minimumSize: const Size(double.infinity, 50)),
                               child: c.isLoading.value
-                                  ? Text("registering".tr)
-                                  : Text("register".tr),
+                                  ? Text("resetting_password".tr)
+                                  : Text("reset_password".tr),
                             )),
                       ],
                     ),

@@ -6,31 +6,29 @@ import 'package:flutter_template/data/network.dart';
 import 'package:get/get.dart';
 
 
-class RegisterController extends GetxController {
+class ResetPasswordController extends GetxController {
   final String username;
-  final String password;
 
   final usernameController = TextEditingController();
   final passwordController = TextEditingController();
+  final captchaController = TextEditingController();
 
   var isLoading = false.obs;
   GlobalKey formKey = GlobalKey<FormState>();
   var passwordVisible = false.obs;
 
-  final captchaController = TextEditingController();
   var isGettingVerificationCode = false.obs;
   var remainingSeconds = 0.obs;
 
-  RegisterController(this.username, this.password);
+  ResetPasswordController(this.username);
 
   @override
   void onInit() {
     super.onInit();
     usernameController.text = username;
-    passwordController.text = password;
   }
 
-  Future<void> register() async {
+  Future<void> resetPassword() async {
     final currentState = formKey.currentState as FormState;
     if (!currentState.validate()) {
       Get.rawSnackbar(message: "please_check_the_input".tr);
@@ -39,23 +37,23 @@ class RegisterController extends GetxController {
     final dio = await AppNetwork.getDio();
 
     try {
-      final resp = await dio.post("/account/register",
+      final resp = await dio.put("/account/password/reset",
           options: Options(responseType: ResponseType.json),
           data: {
             "code": captchaController.text,
-            "password": passwordController.text,
+            "newPassword": passwordController.text,
             "username": usernameController.text,
           });
       final result = resp.data;
       if (result['code'] == 200) {
-        Get.rawSnackbar(message: "registration_successful".tr);
+        Get.rawSnackbar(message: "successful".tr);
         Navigator.pop(Get.context!);
       } else {
         Get.rawSnackbar(
-            message: "${'registration_failed'.tr}: ${result['msg']}");
+            message: "${'failed'.tr}: ${result['msg']}");
       }
     } catch (e) {
-      Get.rawSnackbar(message: "${'registration_failed'.tr}: ${e}");
+      Get.rawSnackbar(message: "${'failed'.tr}: ${e}");
       print(e);
     }
   }
@@ -70,7 +68,7 @@ class RegisterController extends GetxController {
 
     final dio = await AppNetwork.getDio();
     final resp = await dio.post("/account/verify",
-        data: {"codeType": "register", "graphicCode": "", "phoneOrEmail": email});
+        data: {"codeType": "reset_password", "graphicCode": "", "phoneOrEmail": email});
     final respBody = resp.data;
     if (respBody['code'] == 200) {
       Get.rawSnackbar(message: "verification_code_sent_successfully".tr);

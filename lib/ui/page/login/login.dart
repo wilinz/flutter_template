@@ -7,9 +7,9 @@ import 'login_viewmodel.dart';
 class LoginPage extends StatelessWidget {
   LoginPage({Key? key}) : super(key: key);
   final c = Get.put(LoginController());
+
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
       appBar: AppBar(
         title: Text('login'.tr),
@@ -45,46 +45,96 @@ class LoginPage extends StatelessWidget {
                                     BorderRadius.all(Radius.circular(16))),
                           ),
                           validator: (v) {
-                            return v!.trim().length > 0 ? null : "account_cannot_empty".tr;
+                            return v!.trim().length > 0
+                                ? null
+                                : "account_cannot_empty".tr;
                           },
                         ),
                         SizedBox(
                           height: 16,
                         ),
                         Obx(
-                          () => TextFormField(
-                            controller: c.passwordController,
-                            obscureText: !c.passwordVisible.value,
-                            decoration: InputDecoration(
-                              labelText: "password".tr,
-                              hintText: "your_password".tr,
-                              prefixIcon: Icon(Icons.lock),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  //根据passwordVisible状态显示不同的图标
-                                  c.passwordVisible.value
-                                      ? Icons.visibility
-                                      : Icons.visibility_off,
+                          () {
+                            if (c.isVerificationCodeLogin.value) {
+                              return TextFormField(
+                                controller: c.captchaController,
+                                autofocus: true,
+                                decoration: InputDecoration(
+                                  labelText: "captcha".tr,
+                                  hintText: "captcha".tr,
+                                  prefixIcon: Icon(Icons.domain_verification),
+                                  suffixIcon: IconButton(
+                                    onPressed:
+                                        c.isGettingVerificationCode.value ||
+                                                c.remainingSeconds != 0
+                                            ? null
+                                            : () => c.sendCode(
+                                                c.usernameController.text),
+                                    icon: c.remainingSeconds == 0
+                                        ? Icon(Icons.send)
+                                        : Text("${c.remainingSeconds.value}",
+                                            style: Theme.of(context)
+                                                .textTheme
+                                                .bodyLarge),
+                                  ),
+                                  // helperText: '用户名',
+                                  border: const OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(16))),
                                 ),
-                                onPressed: () {
-                                  //更新状态控制密码显示或隐藏
-                                  c.passwordVisible.value =
-                                      !c.passwordVisible.value;
+                                validator: (v) {
+                                  return v!.trim().length > 0
+                                      ? null
+                                      : "verification_code_cannot_empty".tr;
                                 },
-                              ),
-                              // helperText: '密码',
-                              border: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(16))),
-                            ),
-                            validator: (v) {
-                              return v!.trim().length > 0 ? null : "password_cannot_empty".tr;
-                            },
-                          ),
+                              );
+                            } else {
+                              return TextFormField(
+                                controller: c.passwordController,
+                                obscureText: !c.passwordVisible.value,
+                                decoration: InputDecoration(
+                                  labelText: "password".tr,
+                                  hintText: "your_password".tr,
+                                  prefixIcon: Icon(Icons.lock),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      //根据passwordVisible状态显示不同的图标
+                                      c.passwordVisible.value
+                                          ? Icons.visibility
+                                          : Icons.visibility_off,
+                                    ),
+                                    onPressed: () {
+                                      //更新状态控制密码显示或隐藏
+                                      c.passwordVisible.toggle();
+                                    },
+                                  ),
+                                  // helperText: '密码',
+                                  border: const OutlineInputBorder(
+                                      borderRadius: BorderRadius.all(
+                                          Radius.circular(16))),
+                                ),
+                                validator: (v) {
+                                  return v!.trim().length > 0
+                                      ? null
+                                      : "password_cannot_empty".tr;
+                                },
+                              );
+                            }
+                          },
                         ),
-                        Container(
-                          height: 32,
+                        SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Obx(() => TextButton(
+                                onPressed: () {
+                                  c.isVerificationCodeLogin.toggle();
+                                },
+                                child: Text(c.isVerificationCodeLogin.value
+                                    ? 'password_login'.tr
+                                    : 'verification_code_login'.tr))),
+                          ],
                         ),
+                        SizedBox(height: 8),
                         Obx(
                           () => ElevatedButton(
                             onPressed: c.isLoading.value
@@ -111,7 +161,14 @@ class LoginPage extends StatelessWidget {
                               },
                               child: Text("register".tr)),
                           Expanded(child: SizedBox()),
-                          TextButton(onPressed: () {}, child: Text("forgot_password".tr))
+                          TextButton(
+                              onPressed: () {
+                                Get.toNamed(AppRoute.resetPasswordPage,
+                                    arguments: {
+                                      "username": c.usernameController.text
+                                    });
+                              },
+                              child: Text("forgot_password".tr))
                         ])
                       ],
                     ),

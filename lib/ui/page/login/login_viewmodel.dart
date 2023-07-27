@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_template/data/model/account/login_response.dart';
 import 'package:flutter_template/data/network.dart';
 import 'package:flutter_template/util/md5.dart';
+import 'package:dio/src/response.dart' as dio_response;
 import 'package:get/get.dart';
 import 'package:kt_dart/kt.dart';
 
@@ -21,6 +22,11 @@ class LoginController extends GetxController {
   GlobalKey formKey = GlobalKey<FormState>();
   var passwordVisible = false.obs;
 
+  var isVerificationCodeLogin = false.obs;
+  final captchaController = TextEditingController();
+  var isGettingVerificationCode = false.obs;
+  var remainingSeconds = 0.obs;
+
   Future<void> login(
       FormState currentState, String username, String password) async {
     if (!currentState.validate()) {
@@ -30,9 +36,17 @@ class LoginController extends GetxController {
     final dio = await AppNetwork.getDio();
 
     try {
-      final resp = await dio.post("/account/login",
-          options: Options(responseType: ResponseType.json),
-          data: {"username": username, "password": sha256Text(password)});
+      dio_response.Response<dynamic>? resp;
+      if (isVerificationCodeLogin.value) {
+        resp = await dio.post("/account/login_with_code",
+            options: Options(responseType: ResponseType.json),
+            data: {"username": username, "code": captchaController.text});
+      } else {
+        resp = await dio.post("/account/login",
+            options: Options(responseType: ResponseType.json),
+            data: {"username": username, "password": sha256Text(password)});
+      }
+
       final loginResult = LoginResponse.fromJson(resp.data);
       if (loginResult.code == 200) {
         Get.rawSnackbar(message: "登录成功");
@@ -62,5 +76,38 @@ class LoginController extends GetxController {
       usernameController.text = it.username;
       passwordController.text = it.password;
     });
+  }
+
+  sendCode(String email) async {
+    if (usernameController.text.trim().isEmpty) {
+      Get.rawSnackbar(message: "please_enter_your_email_address_first".tr);
+      return;
+    }
+
+    isGettingVerificationCode.value = true;
+
+    final dio = await AppNetwork.getDio();
+    final resp = await dio.post("/account/verify",
+        data: {"codeType": "login", "graphicCode": "", "phoneOrEmail": email});
+    final respBody = resp.data;
+    if (respBody['code'] == 200) {
+      Get.rawSnackbar(message: "verification_code_sent_successfully".tr);
+      // 启动倒计时
+      const countdownDuration = 60; // 倒计时时长
+
+      remainingSeconds.value = countdownDuration;
+      Timer.periodic(Duration(seconds: 1), (timer) {
+        remainingSeconds.value = countdownDuration - timer.tick;
+
+        if (remainingSeconds.value == 0) {
+          timer.cancel();
+        }
+      });
+    } else {
+      Get.rawSnackbar(
+          message: "${'verification_code_sent_failed'.tr}：${respBody['msg']}");
+    }
+
+    isGettingVerificationCode.value = false;
   }
 }
