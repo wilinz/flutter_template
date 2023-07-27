@@ -36,7 +36,7 @@ class RegisterPage extends StatelessWidget {
                         SizedBox(height: 50),
                         TextFormField(
                           controller: c.usernameController,
-                          autofocus: true,
+                          autofocus: false,
                           decoration: InputDecoration(
                             labelText: "email".tr,
                             hintText: "email".tr,
@@ -57,7 +57,7 @@ class RegisterPage extends StatelessWidget {
                         ),
                         Obx(() => TextFormField(
                               controller: c.captchaController,
-                              autofocus: true,
+                              autofocus: false,
                               decoration: InputDecoration(
                                 labelText: "captcha".tr,
                                 hintText: "captcha".tr,

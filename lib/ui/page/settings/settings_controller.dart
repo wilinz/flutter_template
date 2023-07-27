@@ -3,71 +3,64 @@ import 'package:get/get.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:kt_dart/kt.dart';
 
+import '../../../data/get_storage.dart';
 import '../../color_schemes.g.dart';
 
-enum ThemeModeOption { light, dark, system }
-
 extension LocaleExtensions on Locale {
-  String toLocaleString() {
+  String toLocaleCode() {
     String languageCode = this.languageCode;
     String countryCode = this.countryCode ?? "";
     return "${languageCode}_$countryCode";
   }
+
+  static Locale? LocaleFromCode(String? code) {
+    if (code == null) return null;
+    final localeParts = code.split('_');
+    if (localeParts.length == 2) {
+      return Locale(localeParts[0], localeParts[1]);
+    }
+    return null;
+  }
 }
 
 class SettingsController extends GetxController {
-  final _storage = GetStorage();
+  final GetStorage _storage;
   final _themeKey = 'theme';
   final _languageKey = 'language';
 
-  var themeModeOption = ThemeModeOption.system.obs;
-  var selectedLanguage = ''.obs;
+  var themeMode = ThemeMode.system.obs;
+  var locale = LocaleExtensions.LocaleFromCode(null).obs;
+
+  SettingsController(this._storage);
 
   @override
   void onInit() {
     super.onInit();
     // 从存储中加载主题设置和语言设置
-    final savedThemeMode = _storage.read(_themeKey);
-    themeModeOption.value = savedThemeMode != null
-        ? ThemeModeOption.values[savedThemeMode]
-        : ThemeModeOption.system;
+    _storage.read<int?>(_themeKey)?.let((it) {
+      themeMode.value = ThemeMode.values[it];
+    });
 
-    selectedLanguage.value =
-        _storage.read(_languageKey) ?? (Get.deviceLocale?.toLocaleString() ?? '');
+    LocaleExtensions.LocaleFromCode(_storage.read(_languageKey))
+        ?.let((it) => locale.value = it);
   }
 
-  void setThemeMode(ThemeModeOption option) {
-    themeModeOption.value = option;
+  void setThemeMode(ThemeMode mode) {
+    themeMode.value = mode;
+    Get.changeThemeMode(mode);
+    // Get.changeThemeMode(option);
     // 将主题设置保存到存储中
-    var isDarkMode = false;
-    if (option == ThemeModeOption.dark) {
-      isDarkMode = true;
-    } else if (option == ThemeModeOption.system) {
-      isDarkMode = Get.isPlatformDarkMode;
-    }
-    if (isDarkMode) {
-      Get.changeTheme(
-          ThemeData(useMaterial3: true, colorScheme: darkColorScheme));
-    } else {
-      Get.changeTheme(
-          ThemeData(useMaterial3: true, colorScheme: lightColorScheme));
-    }
-    _storage.write(_themeKey, option.index);
+    _storage.write(_themeKey, mode.index);
   }
 
-  void changeLanguage(String language) {
-    selectedLanguage.value = language;
-    if (language == 'system') {
-      Get.deviceLocale?.let((it) {
-        Get.updateLocale(it);
-      });
+  void changeLanguage(String? newLocale) {
+    locale.value = LocaleExtensions.LocaleFromCode(newLocale);
+    if (newLocale != null) {
+      Get.updateLocale(locale.value!);
     } else {
-      final locale = language.split("_");
-      if (locale.length == 2) {
-        Get.updateLocale(Locale(locale[0], locale[1]));
-      }
+      Get.deviceLocale?.let((it) => Get.updateLocale(it));
     }
     // 将语言设置保存到存储中
-    _storage.write(_languageKey, selectedLanguage.value);
+    _storage.write(_languageKey, locale.value?.toLocaleCode());
   }
 }

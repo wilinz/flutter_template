@@ -34,7 +34,7 @@ class LoginPage extends StatelessWidget {
                         SizedBox(height: 50),
                         TextFormField(
                           controller: c.usernameController,
-                          autofocus: true,
+                          autofocus: false,
                           decoration: InputDecoration(
                             labelText: "username".tr,
                             hintText: "your_username".tr,
@@ -58,7 +58,7 @@ class LoginPage extends StatelessWidget {
                             if (c.isVerificationCodeLogin.value) {
                               return TextFormField(
                                 controller: c.captchaController,
-                                autofocus: true,
+                                autofocus: false,
                                 decoration: InputDecoration(
                                   labelText: "captcha".tr,
                                   hintText: "captcha".tr,

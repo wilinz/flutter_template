@@ -5,8 +5,10 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_template/data/get_storage.dart';
 import 'package:flutter_template/ui/color_schemes.g.dart';
 import 'package:flutter_template/messages/messages.dart';
+import 'package:flutter_template/ui/page/settings/settings_controller.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
@@ -48,6 +50,7 @@ Future<void> main() async {
     });
   }
 
+  await initGetStorage();
   runApp(const MyApp());
 }
 
@@ -66,6 +69,8 @@ class MyApp extends StatefulWidget with WindowListener {
 }
 
 class _MyAppState extends State<MyApp> with WindowListener {
+  final settings = Get.put(SettingsController(getStorage));
+
   @override
   Widget build(BuildContext context) {
     if (!kIsWeb && Platform.isAndroid) {
@@ -75,14 +80,16 @@ class _MyAppState extends State<MyApp> with WindowListener {
       SystemChrome.setSystemUIOverlayStyle(systemUiOverlayStyle);
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     }
+
     return GetMaterialApp(
         title: 'app_name'.tr,
         translations: Messages(),
         // locale: Locale('en', 'US'),
-        locale: Get.deviceLocale,
-        fallbackLocale:  Locale('zh', 'CN'),
+        locale: settings.locale.value ?? Get.deviceLocale,
+        fallbackLocale: Locale('zh', 'CN'),
         theme: ThemeData(useMaterial3: true, colorScheme: lightColorScheme),
         darkTheme: ThemeData(useMaterial3: true, colorScheme: darkColorScheme),
+        themeMode: settings.themeMode.value,
         // routes: AppRoute.routes,
         debugShowCheckedModeBanner: false,
         navigatorKey: AppRoute.navigatorKey,
@@ -92,7 +99,7 @@ class _MyAppState extends State<MyApp> with WindowListener {
             AppRoute.currentPage = routeName;
             if (GetPlatform.isDesktop) {
               return Scaffold(
-                appBar: buildWindowTopBar(context,'app_name'.tr),
+                appBar: buildWindowTopBar(context, 'app_name'.tr),
                 body: AppRoute.routes[routeName]!
                     .call(context, settings.arguments),
               );

@@ -35,7 +35,7 @@ class ResetPasswordPage extends StatelessWidget {
                         SizedBox(height: 50),
                         TextFormField(
                           controller: c.usernameController,
-                          autofocus: true,
+                          autofocus: false,
                           decoration: InputDecoration(
                             labelText: "email".tr,
                             hintText: "email".tr,
@@ -56,7 +56,7 @@ class ResetPasswordPage extends StatelessWidget {
                         ),
                         Obx(() => TextFormField(
                               controller: c.captchaController,
-                              autofocus: true,
+                              autofocus: false,
                               decoration: InputDecoration(
                                 labelText: "captcha".tr,
                                 hintText: "captcha".tr,

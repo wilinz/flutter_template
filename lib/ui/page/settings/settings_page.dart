@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import '../../../data/get_storage.dart';
 import 'settings_controller.dart';
 
 class SettingsPage extends StatelessWidget {
-  final SettingsController _settingsController = Get.put(SettingsController());
+  final SettingsController _settingsController =
+      Get.put(SettingsController(getStorage));
 
   @override
   Widget build(BuildContext context) {
@@ -18,25 +20,24 @@ class SettingsPage extends StatelessWidget {
             trailing: Obx(
               () => DropdownButton(
                 padding: EdgeInsets.only(left: 12, right: 12),
-                value: _settingsController.themeModeOption.value,
+                value: _settingsController.themeMode.value,
                 focusColor: Colors.transparent,
                 // 设置焦点颜色为透明
                 items: [
                   DropdownMenuItem(
-                    value: ThemeModeOption.light,
+                    value: ThemeMode.system,
+                    child: Text('follow_system'.tr),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemeMode.light,
                     child: Text('light'.tr),
                   ),
                   DropdownMenuItem(
-                    value: ThemeModeOption.dark,
+                    value: ThemeMode.dark,
                     child: Text('dark'.tr),
                   ),
-                  DropdownMenuItem(
-                    value: ThemeModeOption.system,
-                    child: Text('follow_system'.tr),
-                  ),
                 ],
-                onChanged: (value) =>
-                    _settingsController.setThemeMode(value as ThemeModeOption),
+                onChanged: (value) => _settingsController.setThemeMode(value!),
               ),
             ),
           ),
@@ -44,24 +45,24 @@ class SettingsPage extends StatelessWidget {
             title: Text('language'.tr),
             trailing: DropdownButton(
               padding: EdgeInsets.only(left: 12, right: 12),
-              value: _settingsController.selectedLanguage.value,
+              value: _settingsController.locale.value?.toLocaleCode(),
               focusColor: Colors.transparent,
               // 设置焦点颜色为透明
-              items: [
+              items: <DropdownMenuItem<String?>>[
                 DropdownMenuItem(
-                  value: 'system',
+                  value: null,
                   child: Text('follow_system'.tr),
                 ),
                 DropdownMenuItem(
-                  value: 'en_US',
+                  value: "en_US",
                   child: Text('English'),
                 ),
                 DropdownMenuItem(
-                  value: 'zh_CN',
+                  value: "zh_CN",
                   child: Text('中文'),
                 ),
               ],
-              onChanged: (value) => _settingsController.changeLanguage(value!),
+              onChanged: (value) => _settingsController.changeLanguage(value),
             ),
           ),
         ],
